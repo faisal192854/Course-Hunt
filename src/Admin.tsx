@@ -127,8 +127,9 @@ export default function AdminDashboard() {
   const handleLogout = async () => {
     await auth.signOut();
     sessionStorage.removeItem('admin_session');
+    window.dispatchEvent(new Event('admin-logout'));
     toast.success('Logged out successfully');
-    navigate('/admin/login');
+    navigate('/admin');
   };
 
   const handleDelete = async (id: string | number) => {

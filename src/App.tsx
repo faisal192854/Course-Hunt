@@ -19,14 +19,23 @@ const ProtectedRoute = ({ children, loginElement }: { children: React.ReactNode,
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
   React.useEffect(() => {
-    // Only check for session storage for the secret key login
-    const session = sessionStorage.getItem('admin_session');
-    if (session === 'true') {
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-    }
-    setLoading(false);
+    const checkAuth = () => {
+      const session = sessionStorage.getItem('admin_session');
+      if (session === 'true') {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
+    window.addEventListener('admin-login', checkAuth);
+    window.addEventListener('admin-logout', checkAuth);
+    return () => {
+      window.removeEventListener('admin-login', checkAuth);
+      window.removeEventListener('admin-logout', checkAuth);
+    };
   }, []);
 
   if (loading) {

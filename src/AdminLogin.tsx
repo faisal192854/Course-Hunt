@@ -17,6 +17,7 @@ export default function AdminLogin() {
 
     if (secretKey === correctKey) {
       sessionStorage.setItem('admin_session', 'true');
+      window.dispatchEvent(new Event('admin-login'));
       navigate('/admin');
     } else {
       setError('Invalid secret key. Access denied.');
