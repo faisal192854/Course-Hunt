@@ -13,28 +13,20 @@ import AdminDashboard from './Admin.tsx';
 import AdminLogin from './AdminLogin.tsx';
 import About from './About.tsx';
 
-import { auth } from './firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-
 // Protected Route Component
 const ProtectedRoute = ({ children, loginElement }: { children: React.ReactNode, loginElement?: React.ReactNode }) => {
   const [loading, setLoading] = React.useState(true);
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
   React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // Check for both session storage (for legacy/secret key) and firebase auth
-      // But for Firestore writes, we really need firebase auth
-      const session = sessionStorage.getItem('admin_session');
-      if (session === 'true' || (user && user.email?.toLowerCase() === 'official.faisaln8n@gmail.com')) {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    // Only check for session storage for the secret key login
+    const session = sessionStorage.getItem('admin_session');
+    if (session === 'true') {
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
+    }
+    setLoading(false);
   }, []);
 
   if (loading) {
@@ -49,7 +41,7 @@ const ProtectedRoute = ({ children, loginElement }: { children: React.ReactNode,
     return <>{children}</>;
   }
 
-  return loginElement ? <>{loginElement}</> : <Navigate to="/admin/login" />;
+  return loginElement ? <>{loginElement}</> : <Navigate to="/admin" />;
 };
 
 export default function App() {

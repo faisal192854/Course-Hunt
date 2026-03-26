@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Lock, Mail, ArrowRight, AlertCircle, LogIn } from 'lucide-react';
-import { auth, googleProvider } from './firebase';
-import { signInWithPopup } from 'firebase/auth';
+import { BookOpen, Lock, AlertCircle, LogIn } from 'lucide-react';
 
 export default function AdminLogin() {
   const [secretKey, setSecretKey] = useState('');
@@ -26,25 +24,6 @@ export default function AdminLogin() {
     setIsLoading(false);
   };
 
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    setError('');
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      if (result.user.email?.toLowerCase() === 'official.faisaln8n@gmail.com') {
-        sessionStorage.setItem('admin_session', 'true');
-        navigate('/admin');
-      } else {
-        setError('Unauthorized email. Only the administrator can access this panel.');
-        await auth.signOut();
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign in with Google.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] p-4">
       <div className="w-full max-w-md">
@@ -58,24 +37,6 @@ export default function AdminLogin() {
 
         <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="space-y-6">
-            <button
-              onClick={handleGoogleLogin}
-              disabled={isLoading}
-              className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white py-3 text-sm font-medium text-slate-700 transition-all hover:bg-slate-50 active:scale-[0.98] disabled:opacity-70"
-            >
-              <img src="https://www.gstatic.com/firebase/anonymous-scan/google.svg" alt="Google" className="h-5 w-5" />
-              Sign in with Google
-            </button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-100"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-slate-400">Or use secret key</span>
-              </div>
-            </div>
-
             <form onSubmit={handleLogin} className="space-y-6">
               {error && (
                 <div className="flex items-center gap-3 rounded-lg bg-red-50 p-4 text-sm text-red-600">
