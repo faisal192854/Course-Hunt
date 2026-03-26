@@ -936,6 +936,7 @@ export default function AdminDashboard() {
                       <option value="None">None</option>
                       <option value="Popular">Popular</option>
                       <option value="New">New</option>
+                      <option value="Premium">Premium</option>
                     </select>
                   </div>
                 </div>

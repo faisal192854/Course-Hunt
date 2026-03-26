@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Menu, X, Star, ShoppingCart, Plus, Check, Tag, Trash2 } from 'lucide-react';
+import { Search, Menu, X, Star, ShoppingCart, Plus, Check, Tag, Trash2, Filter, ChevronDown } from 'lucide-react';
 import { SlideToUnlock } from './components/ui/reward-card';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
@@ -35,6 +35,8 @@ export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [extraFilter, setExtraFilter] = useState<string>("All");
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState<boolean>(() => {
     return !sessionStorage.getItem('welcome_popup_shown');
@@ -54,6 +56,17 @@ export default function Home() {
   const gridRef = useRef<Record<string, number[]>>({});
   const canvasSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
   const mousePositionRef = useRef<{ x: number | null; y: number | null }>({ x: null, y: null });
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const DOT_SPACING = 25;
   const BASE_OPACITY_MIN = 0.5;
@@ -316,11 +329,26 @@ export default function Home() {
     };
   }, []);
 
+  const parsePrice = (priceStr: string) => {
+    return parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 0;
+  };
+
   const filteredCourses = courses.filter(course => {
     const matchesCategory = selectedCategory === "All" || course.category === selectedCategory;
     const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    
+    let matchesExtra = true;
+    if (extraFilter === "Popular") matchesExtra = course.additionalChoices === "Popular";
+    else if (extraFilter === "New") matchesExtra = course.additionalChoices === "New";
+    
+    return matchesCategory && matchesSearch && matchesExtra;
   });
+
+  if (extraFilter === "Price: Low to High") {
+    filteredCourses.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+  } else if (extraFilter === "Price: High to Low") {
+    filteredCourses.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
+  }
 
   const ITEMS_PER_PAGE = width < 768 ? 12 : 16;
   const totalPages = Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
@@ -636,7 +664,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.35, ease: "easeOut" }}
-            className="flex flex-wrap justify-center gap-3"
+            className="flex flex-wrap justify-center gap-3 items-center"
           >
             {["All", ...settings.categories].map((category, index) => (
               <motion.button
@@ -657,6 +685,57 @@ export default function Home() {
                 {category}
               </motion.button>
             ))}
+
+            <div className="relative" ref={filterRef}>
+              <motion.button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                whileHover={{ scale: 1.08, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className={cn(
+                  "flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all shadow-sm border-2",
+                  extraFilter !== "All"
+                    ? "bg-[#D4AF37] text-black border-[#D4AF37] shadow-md"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-[#D4AF37]"
+                )}
+              >
+                <Filter className="w-4 h-4" />
+                <span>{extraFilter === "All" ? "Filter" : extraFilter}</span>
+                <ChevronDown className={cn("w-4 h-4 transition-transform", isFilterOpen && "rotate-180")} />
+              </motion.button>
+
+              <AnimatePresence>
+                {isFilterOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden"
+                  >
+                    {[
+                      "All", 
+                      "Popular", 
+                      "New", 
+                      "Price: Low to High", 
+                      "Price: High to Low"
+                    ].map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => {
+                          setExtraFilter(option);
+                          setIsFilterOpen(false);
+                        }}
+                        className={cn(
+                          "w-full text-left px-4 py-3 text-sm transition-colors hover:bg-gray-50",
+                          extraFilter === option ? "bg-gray-50 text-[#D4AF37] font-bold" : "text-gray-700"
+                        )}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </motion.div>
         </section>
 
@@ -689,22 +768,32 @@ export default function Home() {
                     />
                     {course.additionalChoices === 'Popular' && (
                       <motion.div 
-                        className="absolute top-2 right-2 md:top-3 md:right-3 bg-[#FFD700] text-[#0a0a0a] px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold shadow-md border border-[#DAA520]"
-                        initial={{ scale: 0, rotate: -180 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ delay: 0.5 + index * 0.08, type: "spring", stiffness: 260, damping: 20 }}
+                        className="absolute top-0 left-0 bg-[#FFD700] text-black px-4 py-2 text-xs md:text-sm font-black shadow-lg uppercase tracking-widest z-10 border-b border-r border-[#DAA520]"
+                        initial={{ x: -100, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 0.5 + index * 0.08, type: "spring", stiffness: 100 }}
                       >
                         Popular
                       </motion.div>
                     )}
                     {course.additionalChoices === 'New' && (
                       <motion.div 
-                        className="absolute top-2 right-2 md:top-3 md:right-3 bg-[#D4AF37] text-black px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold shadow-md border border-[#B8860B]"
-                        initial={{ scale: 0, rotate: -180 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        transition={{ delay: 0.5 + index * 0.08, type: "spring", stiffness: 260, damping: 20 }}
+                        className="absolute top-0 left-0 bg-[#86EFAC] text-black px-4 py-2 text-xs md:text-sm font-black shadow-lg uppercase tracking-widest z-10 border-b border-r border-[#4ADE80]"
+                        initial={{ x: -100, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 0.5 + index * 0.08, type: "spring", stiffness: 100 }}
                       >
                         New
+                      </motion.div>
+                    )}
+                    {course.additionalChoices === 'Premium' && (
+                      <motion.div 
+                        className="absolute top-0 left-0 bg-gradient-to-r from-[#0a0a0a] to-[#2a2a2a] text-[#FFD700] px-4 py-2 text-xs md:text-sm font-black shadow-xl uppercase tracking-widest z-10 border-b border-r border-[#FFD700]/30"
+                        initial={{ x: -100, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 0.5 + index * 0.08, type: "spring", stiffness: 100 }}
+                      >
+                        Premium
                       </motion.div>
                     )}
                   </div>
