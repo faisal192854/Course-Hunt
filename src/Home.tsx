@@ -29,22 +29,6 @@ interface Dot {
   currentRadius: number;
 }
 
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  life: number;
-  color: string;
-  size: number;
-}
-
-interface TrailPoint {
-  x: number;
-  y: number;
-  time: number;
-}
-
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameId = useRef<number | null>(null);
@@ -67,8 +51,6 @@ export default function Home() {
   const { width, height } = useWindowSize();
 
   const dotsRef = useRef<Dot[]>([]);
-  const particlesRef = useRef<Particle[]>([]);
-  const trailRef = useRef<TrailPoint[]>([]);
   const gridRef = useRef<Record<string, number[]>>({});
   const canvasSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
   const mousePositionRef = useRef<{ x: number | null; y: number | null }>({ x: null, y: null });
@@ -93,36 +75,6 @@ export default function Home() {
     const canvasX = event.clientX - rect.left;
     const canvasY = event.clientY - rect.top;
     mousePositionRef.current = { x: canvasX, y: canvasY };
-
-    // Add to trail
-    trailRef.current.push({ x: canvasX, y: canvasY, time: Date.now() });
-  };
-
-  const handleCanvasClick = (event: globalThis.MouseEvent) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-
-    // Create burst particles
-    for (let i = 0; i < 20; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = Math.random() * 3 + 1;
-      const r = 240 - Math.random() * 52;
-      const g = 148 - Math.random() * 124;
-      const b = 51 + Math.random() * 137;
-      
-      particlesRef.current.push({
-        x,
-        y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        life: 1,
-        color: `rgba(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)}, 1)`,
-        size: Math.random() * 5 + 2
-      });
-    }
   };
 
   const createDots = () => {
@@ -197,38 +149,36 @@ export default function Home() {
 
     ctx.clearRect(0, 0, width, height);
 
-    const now = Date.now();
+    // Draw 3D Perspective Grid
+    const drawGrid = () => {
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.12)';
+      ctx.lineWidth = 1;
 
-    // Draw Trail
-    trailRef.current = trailRef.current.filter(p => now - p.time < 3000);
-    trailRef.current.forEach(point => {
-      const age = now - point.time;
-      const opacity = 0.4 * (1 - age / 3000);
-      const size = 4 * (1 - age / 3000);
-      
-      ctx.beginPath();
-      ctx.fillStyle = `rgba(220, 39, 67, ${opacity})`;
-      ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
-      ctx.fill();
-    });
+      const horizon = height * 0.35;
+      const gridSpacing = 70;
+      const perspective = 0.8;
 
-    // Draw Particles
-    particlesRef.current = particlesRef.current.filter(p => p.life > 0);
-    particlesRef.current.forEach(p => {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vx *= 0.98;
-      p.vy *= 0.98;
-      p.life -= 0.005; 
-
-      if (p.life > 0) {
+      // Horizontal lines (perspective)
+      for (let i = 0; i < 20; i++) {
+        const y = horizon + Math.pow(i / 20, 2) * (height - horizon);
         ctx.beginPath();
-        const colorWithAlpha = p.color.replace('1)', `${p.life.toFixed(3)})`);
-        ctx.fillStyle = colorWithAlpha;
-        ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
       }
-    });
+
+      // Vertical lines (converging at horizon)
+      const centerX = width / 2;
+      for (let i = -10; i <= 10; i++) {
+        const xAtBottom = centerX + i * gridSpacing * 4;
+        ctx.beginPath();
+        ctx.moveTo(centerX + i * gridSpacing * 0.2, horizon);
+        ctx.lineTo(xAtBottom, height);
+        ctx.stroke();
+      }
+    };
+
+    drawGrid();
 
     const activeDotIndices = new Set<number>();
     if (mouseX !== null && mouseY !== null) {
@@ -273,13 +223,8 @@ export default function Home() {
       const finalOpacity = Math.min(1, dot.currentOpacity + interactionFactor * OPACITY_BOOST);
       dot.currentRadius = dot.baseRadius + interactionFactor * RADIUS_BOOST;
 
-      // Instagram-like gradient colors for dots
-      const r = Math.floor(240 - (dot.x / canvas.width) * 52);
-      const g = Math.floor(148 - (dot.y / canvas.height) * 124);
-      const b = Math.floor(51 + (dot.x / canvas.width) * 137);
-
       ctx.beginPath();
-      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${finalOpacity.toFixed(3)})`;
+      ctx.fillStyle = `rgba(212, 175, 55, ${finalOpacity.toFixed(3)})`;
       ctx.arc(dot.x, dot.y, dot.currentRadius, 0, Math.PI * 2);
       ctx.fill();
     });
@@ -294,7 +239,6 @@ export default function Home() {
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('mousedown', handleCanvasClick);
     window.addEventListener('resize', handleResize);
     document.documentElement.addEventListener('mouseleave', handleMouseLeave);
 
@@ -303,7 +247,6 @@ export default function Home() {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mousedown', handleCanvasClick);
       document.documentElement.removeEventListener('mouseleave', handleMouseLeave);
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
@@ -403,7 +346,7 @@ export default function Home() {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: 0.2, type: "spring", stiffness: 500, damping: 15 }}
-        className="flex h-16 w-16 items-center justify-center rounded-full instagram-gradient shadow-lg shadow-[#dc2743]/20"
+        className="flex h-16 w-16 items-center justify-center rounded-full bg-[#D4AF37] shadow-lg shadow-[#D4AF37]/20"
       >
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="20 6 9 17 4 12" />
@@ -445,7 +388,7 @@ export default function Home() {
                 recycle={false} 
                 numberOfPieces={800} 
                 gravity={0.15}
-                colors={['#f09433', '#dc2743', '#bc1888', '#ffffff']}
+                colors={['#D4AF37', '#B8860B', '#ffffff', '#000000']}
                 tweenDuration={5000}
               />
             )}
@@ -465,7 +408,7 @@ export default function Home() {
                 >
                   <div className="text-center">
                     <motion.div 
-                      className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full instagram-gradient shadow-lg text-white"
+                      className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[#D4AF37] to-[#B8860B] shadow-lg text-white"
                       animate={{
                         scale: [1, 1.05, 1],
                       }}
@@ -502,8 +445,8 @@ export default function Home() {
       </AnimatePresence>
 
       <div className="min-h-screen bg-white text-gray-900 relative overflow-x-hidden">
-      <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-70" />
-      <div className="absolute inset-0 z-1 pointer-events-none bg-white" />
+      <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-100" />
+      <div className="absolute inset-0 z-1 pointer-events-none bg-gradient-to-b from-white/5 via-white/30 to-white/90" />
       
       {/* Announcement Bar */}
       {settings.announcement && (
@@ -534,7 +477,7 @@ export default function Home() {
             transition={{ type: "spring", stiffness: 400 }}
           >
             <motion.div 
-              className="w-8 h-8 instagram-gradient rounded-lg flex items-center justify-center"
+              className="w-8 h-8 bg-[#D4AF37] rounded-lg flex items-center justify-center"
               whileHover={{ rotate: 360 }}
               transition={{ duration: 0.6, ease: "easeInOut" }}
             >
@@ -546,7 +489,7 @@ export default function Home() {
           <div className="hidden md:flex items-center space-x-6">
             <Link 
               to="/about" 
-              className="text-gray-700 font-semibold hover:text-[#dc2743] transition-colors"
+              className="text-gray-700 font-semibold hover:text-[#D4AF37] transition-colors"
             >
               About
             </Link>
@@ -558,7 +501,7 @@ export default function Home() {
             >
               <ShoppingCart className="w-6 h-6 text-gray-700" />
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 instagram-gradient text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
+                <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
                   {cartCount}
                 </span>
               )}
@@ -601,7 +544,7 @@ export default function Home() {
               >
                 <Link 
                   to="/about"
-                  className="text-center text-lg font-bold text-gray-900 hover:text-[#dc2743]"
+                  className="text-center text-lg font-bold text-gray-900 hover:text-[#D4AF37]"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   About
@@ -626,16 +569,30 @@ export default function Home() {
         <section className="container mx-auto px-4 md:px-6 lg:px-8 text-center mb-16">
           <motion.h1
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
+            animate={{ 
+              opacity: 1, 
+              y: [0, -10, 0], 
+              scale: 1 
+            }}
+            transition={{ 
+              opacity: { duration: 0.7, ease: "easeOut" },
+              y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+              scale: { duration: 0.7, ease: "easeOut" }
+            }}
             className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-gray-900 via-gray-700 to-gray-600 bg-clip-text text-transparent"
           >
             Discover Your Next Course
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
+            animate={{ 
+              opacity: 1, 
+              y: [0, -5, 0] 
+            }}
+            transition={{ 
+              opacity: { duration: 0.7, delay: 0.15, ease: "easeOut" },
+              y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }
+            }}
             className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8"
           >
             Learn from top instructors and level up your skills
@@ -668,7 +625,7 @@ export default function Home() {
                 placeholder="Search for courses..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#dc2743] focus:border-[#dc2743] transition-all shadow-sm hover:shadow-md"
+                className="w-full pl-12 pr-4 py-3.5 bg-white border-2 border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] transition-all shadow-sm hover:shadow-md"
                 whileFocus={{ scale: 1.01 }}
                 transition={{ type: "spring", stiffness: 300 }}
               />
@@ -693,8 +650,8 @@ export default function Home() {
                 className={cn(
                   "px-5 py-2.5 rounded-full text-sm font-medium transition-all shadow-sm",
                   selectedCategory === category
-                    ? "instagram-gradient text-white shadow-md"
-                    : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-300 hover:border-[#dc2743]"
+                    ? "bg-[#D4AF37] text-black shadow-md"
+                    : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-300 hover:border-[#D4AF37]"
                 )}
               >
                 {category}
@@ -722,7 +679,7 @@ export default function Home() {
                     delay: index * 0.08,
                     ease: "easeOut"
                   }}
-                  className="bg-white border-2 border-black rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:border-[#dc2743]/30 transition-all duration-300 cursor-pointer h-full flex flex-col group"
+                  className="bg-white border-2 border-black rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:border-[#D4AF37]/30 transition-all duration-300 cursor-pointer h-full flex flex-col group"
                 >
                   <div className="relative h-32 md:h-48 overflow-hidden">
                     <img
@@ -742,7 +699,7 @@ export default function Home() {
                     )}
                     {course.additionalChoices === 'New' && (
                       <motion.div 
-                        className="absolute top-2 right-2 md:top-3 md:right-3 instagram-gradient text-white px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold shadow-md border border-white/20"
+                        className="absolute top-2 right-2 md:top-3 md:right-3 bg-[#D4AF37] text-black px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold shadow-md border border-[#B8860B]"
                         initial={{ scale: 0, rotate: -180 }}
                         animate={{ scale: 1, rotate: 0 }}
                         transition={{ delay: 0.5 + index * 0.08, type: "spring", stiffness: 260, damping: 20 }}
@@ -779,7 +736,7 @@ export default function Home() {
                       <div className="flex flex-col">
                         <span className="text-[10px] md:text-sm text-gray-400 line-through font-medium">{course.originalPrice}</span>
                         <motion.span 
-                          className="text-lg md:text-2xl font-bold instagram-text"
+                          className="text-lg md:text-2xl font-bold text-[#D4AF37]"
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.7 + index * 0.08 }}
@@ -798,7 +755,7 @@ export default function Home() {
                             "flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl transition-all shadow-sm",
                             cartService.isInCart(course.id) 
                               ? "bg-gray-100 text-gray-400 cursor-default" 
-                              : "instagram-gradient text-white hover:shadow-md"
+                              : "bg-[#D4AF37] text-black hover:shadow-md"
                           )}
                         >
                           {cartService.isInCart(course.id) ? <Check className="w-4 h-4 md:w-5 md:h-5" /> : <Plus className="w-4 h-4 md:w-5 md:h-5" />}
@@ -826,7 +783,7 @@ export default function Home() {
               <button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 rounded-lg instagram-gradient text-white disabled:opacity-50 hover:bg-opacity-90 transition-colors font-medium"
+                className="px-4 py-2 rounded-lg bg-[#D4AF37] text-black disabled:opacity-50 hover:bg-opacity-90 transition-colors font-medium"
               >
                 Next
               </button>
@@ -882,7 +839,7 @@ export default function Home() {
 
         <section className="container mx-auto px-4 md:px-6 lg:px-8 mb-16">
           <motion.div 
-            className="bg-white border-2 border-gray-100 rounded-3xl p-8 md:p-12 text-center shadow-xl"
+            className="bg-gradient-to-r from-[#D4AF37]/15 to-[#D4AF37]/5 border-2 border-[#D4AF37]/30 rounded-3xl p-8 md:p-12 text-center shadow-xl"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -917,7 +874,7 @@ export default function Home() {
                 y: -3
               }}
               whileTap={{ scale: 0.98 }}
-              className="instagram-gradient text-white px-10 py-4 rounded-xl font-semibold text-lg hover:bg-opacity-90 transition-colors shadow-lg"
+              className="bg-[#D4AF37] text-black px-10 py-4 rounded-xl font-semibold text-lg hover:bg-opacity-90 transition-colors shadow-lg"
             >
               Get Started Free
             </motion.button>
@@ -937,7 +894,7 @@ export default function Home() {
             >© 2023 course-hunt. All rights reserved.</motion.p>
             <Link 
               to="/admin" 
-              className="text-xs font-semibold uppercase tracking-widest text-gray-400 transition-colors hover:text-[#dc2743]"
+              className="text-xs font-semibold uppercase tracking-widest text-gray-400 transition-colors hover:text-[#D4AF37]"
             >
               Admin Panel
             </Link>
@@ -967,7 +924,7 @@ export default function Home() {
           >
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
               <h2 className="text-xl font-bold flex items-center gap-2">
-                <ShoppingCart className="w-6 h-6 instagram-text" />
+                <ShoppingCart className="w-6 h-6 text-[#D4AF37]" />
                 Your Cart
               </h2>
               <button 
@@ -988,7 +945,7 @@ export default function Home() {
                   <p className="text-gray-400 text-sm mt-1">Looks like you haven't added anything yet.</p>
                   <button 
                     onClick={() => setIsCartOpen(false)}
-                    className="mt-6 instagram-gradient text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg transition-all"
+                    className="mt-6 bg-[#D4AF37] text-black px-8 py-3 rounded-xl font-bold hover:shadow-lg transition-all"
                   >
                     Start Shopping
                   </button>
@@ -1004,7 +961,7 @@ export default function Home() {
                       />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-gray-900 leading-tight mb-1 line-clamp-2">{item.title}</h4>
-                        <p className="instagram-text font-black text-lg">{item.price}</p>
+                        <p className="text-[#D4AF37] font-black text-lg">{item.price}</p>
                       </div>
                       <button 
                         onClick={() => {
@@ -1034,7 +991,7 @@ export default function Home() {
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                         disabled={!!appliedCoupon}
-                        className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#dc2743] disabled:bg-gray-100 disabled:text-gray-500"
+                        className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37] disabled:bg-gray-100 disabled:text-gray-500"
                       />
                     </div>
                     {appliedCoupon ? (
@@ -1090,7 +1047,7 @@ export default function Home() {
                   )}
                   <div className="flex justify-between items-center pt-2 border-t border-gray-200">
                     <span className="text-lg font-bold text-gray-900">Total</span>
-                    <span className="text-2xl font-black instagram-text">
+                    <span className="text-2xl font-black text-[#D4AF37]">
                       ${(
                         cartItems.reduce((acc, item) => acc + Number(item.price.replace('$', '')), 0) * 
                         (appliedCoupon ? (1 - appliedCoupon.discount / 100) : 1)
@@ -1100,7 +1057,7 @@ export default function Home() {
                 </div>
 
                 <button 
-                  className="w-full instagram-gradient text-white py-4 rounded-2xl font-bold shadow-lg shadow-[#dc2743]/20 hover:shadow-xl hover:shadow-[#dc2743]/30 transition-all flex items-center justify-center gap-2 text-lg mt-4"
+                  className="w-full bg-[#D4AF37] text-black py-4 rounded-2xl font-bold shadow-lg shadow-[#D4AF37]/20 hover:shadow-xl hover:shadow-[#D4AF37]/30 transition-all flex items-center justify-center gap-2 text-lg mt-4"
                   onClick={() => {
                     const phoneNumber = "+8801314493061";
                     const subtotal = cartItems.reduce((acc, item) => acc + Number(item.price.replace('$', '')), 0);

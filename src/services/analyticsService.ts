@@ -22,10 +22,25 @@ export interface ClickEvent {
 export const analyticsService = {
   async recordClick(courseId: string | number) {
     try {
+      // Get traffic source from URL or referrer
+      const urlParams = new URLSearchParams(window.location.search);
+      let source = urlParams.get('utm_source') || urlParams.get('ref') || 'Direct';
+      
+      if (source === 'Direct' && document.referrer) {
+        const referrer = new URL(document.referrer).hostname;
+        if (referrer.includes('facebook.com')) source = 'Facebook';
+        else if (referrer.includes('t.co') || referrer.includes('twitter.com')) source = 'Twitter';
+        else if (referrer.includes('instagram.com')) source = 'Instagram';
+        else if (referrer.includes('linkedin.com')) source = 'LinkedIn';
+        else if (referrer.includes('youtube.com')) source = 'YouTube';
+        else if (referrer.includes('google.com')) source = 'Google Search';
+        else source = `Referral: ${referrer}`;
+      }
+
       await addDoc(collection(db, CLICKS_COLLECTION), {
         courseId: String(courseId),
         timestamp: serverTimestamp(),
-        country: 'Unknown' // Ideally use a geo-location service
+        trafficSource: source
       });
       window.dispatchEvent(new Event('analytics-updated'));
     } catch (error) {
@@ -87,19 +102,19 @@ export const analyticsService = {
     }
   },
 
-  async getCountryStats() {
+  async getTrafficSourceStats() {
     try {
       const querySnapshot = await getDocs(collection(db, CLICKS_COLLECTION));
       const clicks = querySnapshot.docs.map(doc => doc.data());
       
       const counts: Record<string, number> = {};
       clicks.forEach(click => {
-        const country = click.country || 'Unknown';
-        counts[country] = (counts[country] || 0) + 1;
+        const source = click.trafficSource || 'Direct';
+        counts[source] = (counts[source] || 0) + 1;
       });
 
       return Object.entries(counts)
-        .map(([country, count]) => ({ country, count }))
+        .map(([source, count]) => ({ source, count }))
         .sort((a, b) => b.count - a.count);
     } catch (error) {
       handleFirestoreError(error, OperationType.LIST, CLICKS_COLLECTION);

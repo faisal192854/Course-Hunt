@@ -63,7 +63,7 @@ export default function AdminDashboard() {
   const [selectedCourseId, setSelectedCourseId] = useState<string | 'all'>('all');
   const [chartData, setChartData] = useState<any[]>([]);
   const [topProducts, setTopProducts] = useState<{ course: Course; count: number }[]>([]);
-  const [countryStats, setCountryStats] = useState<{ country: string; count: number }[]>([]);
+  const [trafficSourceStats, setTrafficSourceStats] = useState<{ source: string; count: number }[]>([]);
 
   const navigate = useNavigate();
 
@@ -82,8 +82,8 @@ export default function AdminDashboard() {
       }).filter(t => t.course);
       setTopProducts(topWithDetails);
 
-      const stats = await analyticsService.getCountryStats();
-      setCountryStats(stats);
+      const stats = await analyticsService.getTrafficSourceStats();
+      setTrafficSourceStats(stats);
     };
 
     updateAnalytics();
@@ -351,18 +351,18 @@ export default function AdminDashboard() {
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-6 text-lg font-bold text-slate-900">Clicks by Country</h2>
+            <h2 className="mb-6 text-lg font-bold text-slate-900">Traffic Sources</h2>
             <div className="space-y-4">
-              {countryStats.length > 0 ? countryStats.map((stat, i) => (
+              {trafficSourceStats.length > 0 ? trafficSourceStats.map((stat, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                    <span className="text-sm font-medium text-slate-700">{stat.country}</span>
+                    <span className="text-sm font-medium text-slate-700">{stat.source}</span>
                   </div>
                   <span className="text-sm font-bold text-slate-900">{stat.count}</span>
                 </div>
               )) : (
-                <p className="text-center text-sm text-slate-500 py-4">No country data available</p>
+                <p className="text-center text-sm text-slate-500 py-4">No traffic source data available</p>
               )}
             </div>
           </div>
