@@ -1,0 +1,103 @@
+{
+  "entities": {
+    "Course": {
+      "title": "Course",
+      "description": "A course offered on the platform",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "price": { "type": "string" },
+        "originalPrice": { "type": "string" },
+        "rating": { "type": "number" },
+        "reviews": { "type": "number" },
+        "image": { "type": "string" },
+        "category": { "type": "string" },
+        "additionalChoices": { "type": "string" },
+        "sourceUrl": { "type": "string" },
+        "about": { "type": "string" },
+        "objectives": { "type": "array", "items": { "type": "string" } },
+        "gallery": { "type": "array", "items": { "type": "string" } },
+        "fileImages": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "price", "image", "category"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "A review for a course",
+      "type": "object",
+      "properties": {
+        "course_id": { "type": "string" },
+        "user_name": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "image_url": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["course_id", "user_name", "rating", "comment"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Application settings",
+      "type": "object",
+      "properties": {
+        "announcement": { "type": "string" },
+        "categories": { "type": "array", "items": { "type": "string" } },
+        "coupons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "code": { "type": "string" },
+              "discount": { "type": "number" },
+              "isActive": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "Click": {
+      "title": "Click",
+      "description": "A course click event",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "country": { "type": "string" }
+      }
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] }
+      }
+    }
+  },
+  "firestore": {
+    "courses": {
+      "schema": "Course",
+      "description": "Collection of courses"
+    },
+    "reviews": {
+      "schema": "Review",
+      "description": "Collection of course reviews"
+    },
+    "settings": {
+      "schema": "Settings",
+      "description": "Application settings document"
+    },
+    "clicks": {
+      "schema": "Click",
+      "description": "Course click events"
+    },
+    "users": {
+      "schema": "User",
+      "description": "User profiles"
+    }
+  }
+}
