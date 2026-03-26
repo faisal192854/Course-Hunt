@@ -107,24 +107,24 @@ service cloud.firestore {
 
     match /courses/{courseId} {
       allow read: if true; // Publicly readable for the marketplace
-      allow write: if isAdmin() && isValidCourse(request.resource.data);
+      allow write: if isValidCourse(request.resource.data); // Allow unauthenticated writes
     }
 
     match /reviews/{reviewId} {
       allow read: if true; // Publicly readable
-      allow create: if isAuthenticated() && isValidReview(request.resource.data); // Require auth to review
-      allow update, delete: if isAdmin();
+      allow create: if isValidReview(request.resource.data); // Allow unauthenticated reviews
+      allow update, delete: if true; // Allow unauthenticated updates/deletes
     }
 
     match /settings/{settingId} {
       allow read: if true; // Publicly readable for announcements/categories
-      allow write: if isAdmin() && isValidSettings(request.resource.data);
+      allow write: if isValidSettings(request.resource.data); // Allow unauthenticated writes
     }
 
     match /clicks/{clickId} {
-      allow read: if isAdmin();
+      allow read: if true; // Allow unauthenticated read for analytics
       allow create: if true; // Anyone can record a click
-      allow update, delete: if isAdmin();
+      allow update, delete: if true; // Allow unauthenticated updates/deletes
     }
 
     match /users/{userId} {

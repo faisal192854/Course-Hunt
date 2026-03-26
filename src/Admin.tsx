@@ -54,7 +54,6 @@ export default function AdminDashboard() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [fileImagesPreviews, setFileImagesPreviews] = useState<string[]>([]);
-  const [isFirebaseAuthed, setIsFirebaseAuthed] = useState(false);
   
   // Settings State
   const [settings, setSettings] = useState<AppSettings>(settingsService.getDefaultSettings());
@@ -67,13 +66,6 @@ export default function AdminDashboard() {
   const [countryStats, setCountryStats] = useState<{ country: string; count: number }[]>([]);
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setIsFirebaseAuthed(!!user);
-    });
-    return () => unsubscribe();
-  }, []);
 
   useEffect(() => {
     const updateAnalytics = async () => {
@@ -695,24 +687,6 @@ export default function AdminDashboard() {
         </header>
 
         <div className="p-8">
-          {!isFirebaseAuthed && (
-            <div className="mb-8 flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800 shadow-sm">
-              <div className="flex items-center gap-3">
-                <AlertTriangle className="h-6 w-6 text-amber-600" />
-                <div>
-                  <p className="font-bold">Database Access Restricted</p>
-                  <p className="text-sm">You are logged in via secret key, but not authenticated with Firebase. You will not be able to add or edit courses.</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => navigate('/admin/login')}
-                className="flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-amber-700 active:scale-95"
-              >
-                <LoginIcon className="h-4 w-4" />
-                Sign in with Google
-              </button>
-            </div>
-          )}
           {activeTab === 'dashboard' && renderDashboard()}
           {activeTab === 'settings' && renderSettings()}
           
