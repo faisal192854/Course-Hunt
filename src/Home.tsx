@@ -478,7 +478,7 @@ export default function Home() {
       
       {/* Announcement Bar */}
       {settings.announcement && (
-        <div className="relative z-40 bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] text-white py-2 px-4 text-center text-xs font-mono font-bold tracking-widest uppercase overflow-hidden">
+        <div className="relative z-40 bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] text-white py-2 px-4 text-center text-lg font-mono font-bold tracking-widest uppercase overflow-hidden">
           <motion.div
             animate={{ x: [0, -10, 10, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
