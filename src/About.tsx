@@ -39,8 +39,9 @@ export default function About() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
+    <div className="min-h-screen bg-white text-gray-900 relative">
+      <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-br from-[#f09433]/5 via-[#dc2743]/5 to-[#bc1888]/5" />
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-30">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center text-gray-600 hover:text-gray-900 transition-colors" style={{ textDecoration: 'none' }}>
             <ArrowLeft className="w-5 h-5 mr-2" />
@@ -52,7 +53,7 @@ export default function About() {
           >
             <ShoppingCart className="w-5 h-5 text-gray-600" />
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-[#EBC351] text-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
+              <span className="absolute -top-2 -right-2 instagram-gradient text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
                 {cartCount}
               </span>
             )}
@@ -67,12 +68,12 @@ export default function About() {
           transition={{ duration: 0.6 }}
           className="text-center"
         >
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-[#EBC351]/10 rounded-full mb-8">
-            <ShieldCheck className="w-10 h-10 text-[#EBC351]" />
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#f09433]/10 to-[#bc1888]/10 rounded-full mb-8">
+            <ShieldCheck className="w-10 h-10 instagram-text" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">About course-hunt</h1>
-          <div className="bg-gradient-to-r from-[#EBC351]/20 to-transparent p-8 rounded-3xl border-2 border-[#EBC351]/30 shadow-xl mb-12">
-            <p className="text-2xl md:text-3xl font-bold text-[#EBC351]">
+          <div className="bg-gradient-to-br from-[#f09433]/10 via-[#dc2743]/10 to-[#bc1888]/10 p-8 rounded-3xl border-2 border-[#dc2743]/30 shadow-xl mb-12">
+            <p className="text-2xl md:text-3xl font-bold instagram-text">
               7-day money-back guarantee
             </p>
             <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
@@ -81,18 +82,18 @@ export default function About() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left mb-16">
-            <div className="bg-white p-6 rounded-2xl border-2 border-[#EBC351]/10 shadow-sm hover:border-[#EBC351]/30 transition-colors">
+            <div className="bg-white p-6 rounded-2xl border-2 border-[#dc2743]/10 shadow-sm hover:border-[#dc2743]/30 transition-colors">
               <h3 className="text-xl font-bold mb-3 text-gray-900 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#EBC351]"></span>
+                <span className="w-2 h-2 rounded-full instagram-gradient"></span>
                 Our Mission
               </h3>
               <p className="text-gray-600">
                 To provide high-quality, accessible education to everyone, everywhere. We believe that learning should be a lifelong journey.
               </p>
             </div>
-            <div className="bg-white p-6 rounded-2xl border-2 border-[#EBC351]/10 shadow-sm hover:border-[#EBC351]/30 transition-colors">
+            <div className="bg-white p-6 rounded-2xl border-2 border-[#dc2743]/10 shadow-sm hover:border-[#dc2743]/30 transition-colors">
               <h3 className="text-xl font-bold mb-3 text-gray-900 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#EBC351]"></span>
+                <span className="w-2 h-2 rounded-full instagram-gradient"></span>
                 Quality Content
               </h3>
               <p className="text-gray-600">
@@ -101,9 +102,9 @@ export default function About() {
             </div>
           </div>
 
-          <div className="bg-gray-50 p-8 rounded-3xl border-2 border-[#EBC351]/20 mb-12 text-left">
+          <div className="bg-gray-50 p-8 rounded-3xl border-2 border-[#dc2743]/20 mb-12 text-left">
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <span className="bg-[#EBC351] text-black p-2 rounded-lg">
+              <span className="instagram-gradient text-white p-2 rounded-lg">
                 <ShieldCheck className="w-6 h-6" />
               </span>
               Payment Methods
@@ -113,7 +114,7 @@ export default function About() {
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {['Bkash', 'Binance', 'Credit/Debit Card'].map((method) => (
-                <div key={method} className="bg-white p-4 rounded-xl border border-[#EBC351]/20 text-center font-bold text-gray-800 shadow-sm hover:border-[#EBC351] transition-colors">
+                <div key={method} className="bg-white p-4 rounded-xl border border-[#dc2743]/20 text-center font-bold text-gray-800 shadow-sm hover:border-[#dc2743] transition-colors">
                   {method}
                 </div>
               ))}
@@ -121,7 +122,7 @@ export default function About() {
           </div>
 
           {/* New Review Request Section */}
-          <div className="bg-[#EBC351] p-10 rounded-3xl border-4 border-black mb-12 text-center shadow-2xl relative overflow-hidden">
+          <div className="instagram-gradient p-10 rounded-3xl border-4 border-black mb-12 text-center shadow-2xl relative overflow-hidden">
             <motion.div 
               className="absolute top-4 left-4"
               animate={{ x: [0, 10, 0] }}
@@ -156,7 +157,7 @@ export default function About() {
                 const message = "Hi! I'd like to share my review about the course I received.";
                 window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
               }}
-              className="bg-black text-[#EBC351] px-10 py-4 rounded-2xl font-black text-xl shadow-xl hover:bg-gray-900 transition-all flex items-center justify-center gap-3 mx-auto"
+              className="bg-black instagram-text px-10 py-4 rounded-2xl font-black text-xl shadow-xl hover:bg-gray-900 transition-all flex items-center justify-center gap-3 mx-auto"
             >
               Submit Your Review
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -165,7 +166,7 @@ export default function About() {
             </motion.button>
           </div>
 
-          <div className="bg-white p-8 rounded-3xl border-2 border-[#EBC351] mb-12 text-left shadow-xl">
+          <div className="bg-white p-8 rounded-3xl border-2 border-[#dc2743] mb-12 text-left shadow-xl">
             <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
               <span className="bg-[#25D366] text-white p-2 rounded-lg">
                 <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
@@ -183,7 +184,7 @@ export default function About() {
                 { step: 5, title: "Receive Course Link", desc: "Once payment is verified, you will receive your course access link directly on WhatsApp instantly." }
               ].map((item) => (
                 <div key={item.step} className="flex gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 bg-[#EBC351] text-black rounded-full flex items-center justify-center font-black">
+                  <div className="flex-shrink-0 w-10 h-10 instagram-gradient text-white rounded-full flex items-center justify-center font-black">
                     {item.step}
                   </div>
                   <div>
@@ -224,7 +225,7 @@ export default function About() {
             >
               <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                 <h2 className="text-xl font-bold flex items-center gap-2">
-                  <ShoppingCart className="w-6 h-6 text-[#EBC351]" />
+                  <ShoppingCart className="w-6 h-6 instagram-text" />
                   Your Cart
                 </h2>
                 <button 
@@ -244,7 +245,7 @@ export default function About() {
                     <p className="text-gray-500 font-medium">Your cart is empty</p>
                     <button 
                       onClick={() => setIsCartOpen(false)}
-                      className="mt-4 text-[#EBC351] font-bold hover:underline"
+                      className="mt-4 instagram-text font-bold hover:underline"
                     >
                       Start Shopping
                     </button>
@@ -260,7 +261,7 @@ export default function About() {
                         />
                         <div className="flex-1 min-w-0">
                           <h4 className="font-bold text-sm line-clamp-1">{item.title}</h4>
-                          <p className="text-[#EBC351] font-bold">{item.price}</p>
+                          <p className="instagram-text font-bold">{item.price}</p>
                         </div>
                         <button 
                           onClick={() => {
@@ -284,7 +285,7 @@ export default function About() {
                     <span className="text-xl font-bold">{cartItems.length}</span>
                   </div>
                   <button 
-                    className="w-full bg-[#EBC351] text-black py-4 rounded-2xl font-bold shadow-lg shadow-[#EBC351]/20 hover:shadow-xl hover:shadow-[#EBC351]/30 transition-all"
+                    className="w-full instagram-gradient text-white py-4 rounded-2xl font-bold shadow-lg shadow-[#dc2743]/20 hover:shadow-xl hover:shadow-[#dc2743]/30 transition-all"
                     onClick={() => {
                       toast.success('Checkout functionality coming soon!');
                     }}

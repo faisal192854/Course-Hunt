@@ -17,7 +17,7 @@ import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 // Protected Route Component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute = ({ children, loginElement }: { children: React.ReactNode, loginElement?: React.ReactNode }) => {
   const [loading, setLoading] = React.useState(true);
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
 
@@ -45,7 +45,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/admin/login" />;
+  if (isAuthenticated) {
+    return <>{children}</>;
+  }
+
+  return loginElement ? <>{loginElement}</> : <Navigate to="/admin/login" />;
 };
 
 export default function App() {
@@ -55,11 +59,10 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/course/:id" element={<CourseDetail />} />
         <Route path="/about" element={<About />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
         <Route 
           path="/admin" 
           element={
-            <ProtectedRoute>
+            <ProtectedRoute loginElement={<AdminLogin />}>
               <AdminDashboard />
             </ProtectedRoute>
           } 
